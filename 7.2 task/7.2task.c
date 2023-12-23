@@ -43,7 +43,7 @@ void compareFilesInDirectories(char* dir1, char* dir2, int maxProcesses) {
 
     DIR *d1, *d2;
     
-    int currentProcesses = 0;
+    int currentProcesses = 1;
 
     d1 = opendir(dir1);
     d2 = opendir(dir2);

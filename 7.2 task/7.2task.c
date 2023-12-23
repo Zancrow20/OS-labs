@@ -42,8 +42,7 @@ void compareFiles(char* file1, char* file2) {
 void compareFilesInDirectories(char* dir1, char* dir2, int maxProcesses) {
 
     DIR *d1, *d2;
-    
-    int currentProcesses = 1;
+    int currentProcesses = 0;
 
     d1 = opendir(dir1);
     d2 = opendir(dir2);
@@ -57,32 +56,28 @@ void compareFilesInDirectories(char* dir1, char* dir2, int maxProcesses) {
     while ((dirEntry1 = readdir(d1)) != NULL) {
         if (dirEntry1->d_type == DT_REG) { 
             char file1[512];
-
             snprintf(file1, sizeof(file1), "./%s/%s", dir1, dirEntry1->d_name);
             rewinddir(d2); 
 
             while ((dirEntry2 = readdir(d2)) != NULL) {
-
                 if (dirEntry2->d_type == DT_REG) {
                     char file2[512];
                     snprintf(file2, sizeof(file2), "./%s/%s", dir2, dirEntry2->d_name);
 
-                    if (currentProcesses = maxProcesses){ 
-                        wait(NULL);
-                        currentProcesses--;
-                    }
-
                     pid_t child_pid = fork();
-
+                    currentProcesses++;
+                    
                     if (child_pid == -1) {
                         perror("fork");
                         exit(1);
                     } else if (child_pid == 0) {
-                        currentProcesses++;
+                    	printf("Count of processes: %d\n", currentProcesses);
+                        system("ps -x | grep \"7_lab_2\" | grep -v \"grep\" ");
                         printf("Child pid=%d, comparing files %s and %s\n", getpid(), file1, file2);
                         compareFiles(file1, file2);
                         exit(0);
-                    } else{ 
+                    }
+                    else if(currentProcesses >= maxProcesses){
                         wait(NULL);
                         currentProcesses--;
                     }
@@ -94,8 +89,7 @@ void compareFilesInDirectories(char* dir1, char* dir2, int maxProcesses) {
     closedir(d1);
     closedir(d2);
 
-    while(currentProcesses > 0){
-        wait(NULL);
+    while(currentProcesses > 0 && wait(NULL) > 0){ 
         currentProcesses--;
     }
 }
